@@ -20,6 +20,7 @@ dist
 .DS_Store
 wandb
 output
+outputs
 work_dirs
 data
 model_zoo
@@ -34,4 +35,3 @@ ckpts*
 
 # DevContainer
 !.devcontainer/*
-

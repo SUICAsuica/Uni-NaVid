@@ -291,6 +291,7 @@ if __name__ == '__main__':
     h,w,n = images[0].shape
         
     result_vis_list = []
+    result_log = []
     step_count = 0
     for i, img in enumerate(images):
         image=img
@@ -304,9 +305,18 @@ if __name__ == '__main__':
         
         traj = result['path'][0]
         actions = result['actions']
+        result_log.append({
+            "step": step_count,
+            "image": f"images/{i}.jpg",
+            "instruction": instruction,
+            "actions": actions,
+            "trajectory": traj,
+        })
 
         vis = draw_traj_arrows_fpv(img, actions, arrow_len=20)
         result_vis_list.append(vis)
 
     
     imageio.mimsave(os.path.join(args.output_dir,"result.gif"), result_vis_list)
+    with open(os.path.join(args.output_dir, "result.json"), "w", encoding="utf-8") as f:
+        json.dump(result_log, f, ensure_ascii=False, indent=2)
