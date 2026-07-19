@@ -3,24 +3,12 @@ set -euo pipefail
 
 repo_root="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 data_root="${DATA_ROOT:-/home/novel/uninavid-data/task4_uninavid_full}"
-manifest="${MANIFEST:-${data_root}/task4_smoke_4_goal.json}"
+manifest="${MANIFEST:-${data_root}/task4_overfit_200_goal.json}"
 model_path="${MODEL_PATH:-${repo_root}/model_zoo/uninavid-7b-full-224-video-fps-1-grid-2}"
-output_dir="${OUTPUT_DIR:-${repo_root}/outputs/task4-smoke-cross-attention}"
+output_dir="${OUTPUT_DIR:-${repo_root}/outputs/task4-overfit-200-goal}"
+max_steps="${MAX_STEPS:-400}"
 
 cd "${repo_root}"
-
-"${repo_root}/.venv/bin/python" tools/build_task4_subset.py \
-  --samples-json "${data_root}/samples_train.json" \
-  --stock-json "${data_root}/uninavid_train_goal.json" \
-  --output "${manifest}" \
-  --per-bin 1 \
-  --seed 42
-
-"${repo_root}/.venv/bin/python" tools/smoke_task4_loader.py \
-  --manifest "${manifest}" \
-  --video-folder "${data_root}" \
-  --model-path "${model_path}" \
-  --image-processor "${repo_root}/uninavid/processor/clip-patch14-224"
 
 "${repo_root}/.venv/bin/python" -m uninavid.train.train \
   --model_name_or_path "${model_path}" \
@@ -30,6 +18,7 @@ cd "${repo_root}"
   --video_folder "${data_root}" \
   --vision_tower "${repo_root}/model_zoo/eva_vit_g.pth" \
   --image_processor "${repo_root}/uninavid/processor/clip-patch14-224" \
+  --video_augmentation True \
   --tune_vision_encoder False \
   --tune_mm_mlp_adapter False \
   --history_compressor_type cross_attention \
@@ -52,17 +41,19 @@ cd "${repo_root}"
   --bf16 True \
   --tf32 True \
   --output_dir "${output_dir}" \
-  --max_steps 1 \
+  --max_steps "${max_steps}" \
   --per_device_train_batch_size 1 \
   --gradient_accumulation_steps 1 \
   --learning_rate 1e-4 \
   --weight_decay 0 \
-  --warmup_ratio 0 \
-  --logging_steps 1 \
+  --warmup_ratio 0.03 \
+  --lr_scheduler_type cosine \
+  --logging_steps 10 \
   --save_strategy no \
   --evaluation_strategy no \
   --model_max_length 2048 \
   --gradient_checkpointing False \
-  --dataloader_num_workers 0 \
+  --dataloader_num_workers 2 \
   --lazy_preprocess True \
-  --report_to none
+  --report_to none \
+  --seed 42

@@ -68,6 +68,8 @@ class LlavaLlamaAttForCausalLM(LlamaForCausalLM, UniNaVIDMetaForCausalLM):
         output_hidden_states: Optional[bool] = None,
         images: Optional[torch.FloatTensor] = None,
         prompts: Optional[List[str]] = None,
+        goal_input_ids: Optional[torch.LongTensor] = None,
+        goal_attention_mask: Optional[torch.Tensor] = None,
         return_dict: Optional[bool] = None,
     ) -> Union[Tuple, CausalLMOutputWithPast]:
         output_attentions = output_attentions if output_attentions is not None else self.config.output_attentions
@@ -82,7 +84,16 @@ class LlavaLlamaAttForCausalLM(LlamaForCausalLM, UniNaVIDMetaForCausalLM):
             if input_ids.device != self.device:
                 input_ids = input_ids.to(device=self.device)
 
-        input_ids, attention_mask, past_key_values, inputs_embeds, labels = self.prepare_inputs_labels_for_multimodal(input_ids, attention_mask, past_key_values, labels, images, prompts=prompts)
+        input_ids, attention_mask, past_key_values, inputs_embeds, labels = self.prepare_inputs_labels_for_multimodal(
+            input_ids,
+            attention_mask,
+            past_key_values,
+            labels,
+            images,
+            prompts=prompts,
+            goal_input_ids=goal_input_ids,
+            goal_attention_mask=goal_attention_mask,
+        )
 
         torch.cuda.empty_cache()
 

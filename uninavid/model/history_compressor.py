@@ -16,6 +16,7 @@ class LearnedHistoryCompressor(nn.Module):
         dropout=0.1,
         tokens_per_frame=64,
         max_history_frames=512,
+        goal_dim=None,
     ):
         super().__init__()
         if hidden_dim % num_heads != 0:
@@ -27,6 +28,7 @@ class LearnedHistoryCompressor(nn.Module):
         self.tokens_per_frame = tokens_per_frame
         self.vision_dim = vision_dim
         self.max_history_frames = max_history_frames
+        self.goal_dim = goal_dim
 
         self.input_norm = nn.LayerNorm(vision_dim)
         self.input_projection = nn.Linear(vision_dim, hidden_dim)
@@ -34,6 +36,15 @@ class LearnedHistoryCompressor(nn.Module):
             torch.empty(tokens_per_frame, hidden_dim)
         )
         self.temporal_embedding = nn.Embedding(max_history_frames, hidden_dim)
+        if goal_dim is not None:
+            self.goal_projection = nn.Sequential(
+                nn.LayerNorm(goal_dim),
+                nn.Linear(goal_dim, hidden_dim),
+                nn.GELU(),
+                nn.Linear(hidden_dim, hidden_dim),
+            )
+        else:
+            self.goal_projection = None
         self.query_tokens = nn.Parameter(torch.empty(num_queries, hidden_dim))
         self.null_history_token = nn.Parameter(torch.empty(1, hidden_dim))
 
@@ -55,10 +66,12 @@ class LearnedHistoryCompressor(nn.Module):
         nn.init.normal_(self.spatial_embedding, std=0.02)
         nn.init.normal_(self.temporal_embedding.weight, std=0.02)
 
-    def forward(self, history):
+    def forward(self, history, goal_features=None, goal_attention_mask=None):
         """
         Args:
             history: EVA features shaped [batch, frames, 64, vision_dim].
+            goal_features: Frozen LLM embeddings shaped [batch, tokens, goal_dim].
+            goal_attention_mask: Valid goal tokens shaped [batch, tokens].
 
         Returns:
             Fixed history tokens shaped [batch, num_queries, vision_dim].
@@ -97,6 +110,15 @@ class LearnedHistoryCompressor(nn.Module):
             memory = memory.flatten(1, 2)
 
         queries = self.query_tokens.unsqueeze(0).expand(batch_size, -1, -1)
+        if self.goal_projection is not None:
+            if goal_features is None or goal_attention_mask is None:
+                raise ValueError("goal-conditioned compression requires goal features")
+            if goal_features.shape[0] != batch_size:
+                raise ValueError("goal batch size must match history batch size")
+            mask = goal_attention_mask.to(goal_features.dtype).unsqueeze(-1)
+            pooled_goal = (goal_features * mask).sum(dim=1)
+            pooled_goal = pooled_goal / mask.sum(dim=1).clamp_min(1)
+            queries = queries + self.goal_projection(pooled_goal).unsqueeze(1)
         compressed = self.decoder(tgt=queries, memory=memory)
         return self.output_projection(self.output_norm(compressed))
 
@@ -106,6 +128,7 @@ def build_history_compressor(config):
     if compressor_type != "cross_attention":
         raise ValueError(f"Unsupported history compressor: {compressor_type}")
 
+    goal_conditioned = getattr(config, "history_goal_conditioned", False)
     return LearnedHistoryCompressor(
         vision_dim=config.mm_hidden_size,
         hidden_dim=getattr(config, "history_hidden_size", 512),
@@ -115,4 +138,5 @@ def build_history_compressor(config):
         ffn_dim=getattr(config, "history_ffn_dim", 2048),
         dropout=getattr(config, "history_dropout", 0.1),
         max_history_frames=getattr(config, "history_max_frames", 512),
+        goal_dim=config.hidden_size if goal_conditioned else None,
     )

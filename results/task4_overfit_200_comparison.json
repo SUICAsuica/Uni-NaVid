@@ -1,0 +1,206 @@
+{
+  "manifest": "/home/novel/uninavid-data/task4_uninavid_full/task4_overfit_200_goal.json",
+  "teacher_forced": true,
+  "baseline_mode": "heuristic",
+  "candidate_mode": "goal_cross_attention",
+  "baseline": {
+    "samples": 200,
+    "loss": 0.7073091697692871,
+    "action_accuracy": [
+      0.59,
+      0.63,
+      0.67,
+      0.615
+    ],
+    "first_action_accuracy": 0.59,
+    "four_action_exact_match": 0.17,
+    "mean_action_accuracy": 0.62625
+  },
+  "candidate": {
+    "samples": 200,
+    "loss": 0.6672314453125,
+    "action_accuracy": [
+      0.575,
+      0.64,
+      0.7,
+      0.59
+    ],
+    "first_action_accuracy": 0.575,
+    "four_action_exact_match": 0.13,
+    "mean_action_accuracy": 0.62625
+  },
+  "candidate_minus_baseline": {
+    "loss": -0.040077724456787145,
+    "action_accuracy": [
+      -0.015000000000000013,
+      0.010000000000000009,
+      0.029999999999999916,
+      -0.025000000000000022
+    ],
+    "mean_action_accuracy": 0.0,
+    "first_action_accuracy": -0.015000000000000013,
+    "four_action_exact_match": -0.04000000000000001
+  },
+  "by_history_bin": {
+    "extra_long": {
+      "baseline": {
+        "samples": 50,
+        "loss": 0.61771484375,
+        "action_accuracy": [
+          0.68,
+          0.82,
+          0.7,
+          0.66
+        ],
+        "first_action_accuracy": 0.68,
+        "four_action_exact_match": 0.22,
+        "mean_action_accuracy": 0.7150000000000001
+      },
+      "candidate": {
+        "samples": 50,
+        "loss": 0.553046875,
+        "action_accuracy": [
+          0.64,
+          0.78,
+          0.68,
+          0.64
+        ],
+        "first_action_accuracy": 0.64,
+        "four_action_exact_match": 0.12,
+        "mean_action_accuracy": 0.685
+      },
+      "candidate_minus_baseline": {
+        "loss": -0.06466796874999992,
+        "action_accuracy": [
+          -0.040000000000000036,
+          -0.039999999999999925,
+          -0.019999999999999907,
+          -0.020000000000000018
+        ],
+        "mean_action_accuracy": -0.030000000000000027,
+        "first_action_accuracy": -0.040000000000000036,
+        "four_action_exact_match": -0.1
+      }
+    },
+    "long": {
+      "baseline": {
+        "samples": 50,
+        "loss": 0.73099609375,
+        "action_accuracy": [
+          0.56,
+          0.44,
+          0.64,
+          0.62
+        ],
+        "first_action_accuracy": 0.56,
+        "four_action_exact_match": 0.14,
+        "mean_action_accuracy": 0.5650000000000001
+      },
+      "candidate": {
+        "samples": 50,
+        "loss": 0.70150390625,
+        "action_accuracy": [
+          0.58,
+          0.56,
+          0.72,
+          0.6
+        ],
+        "first_action_accuracy": 0.58,
+        "four_action_exact_match": 0.16,
+        "mean_action_accuracy": 0.615
+      },
+      "candidate_minus_baseline": {
+        "loss": -0.029492187499999933,
+        "action_accuracy": [
+          0.019999999999999907,
+          0.12000000000000005,
+          0.07999999999999996,
+          -0.020000000000000018
+        ],
+        "mean_action_accuracy": 0.04999999999999993,
+        "first_action_accuracy": 0.019999999999999907,
+        "four_action_exact_match": 0.01999999999999999
+      }
+    },
+    "medium": {
+      "baseline": {
+        "samples": 50,
+        "loss": 0.6939632415771484,
+        "action_accuracy": [
+          0.58,
+          0.6,
+          0.7,
+          0.62
+        ],
+        "first_action_accuracy": 0.58,
+        "four_action_exact_match": 0.14,
+        "mean_action_accuracy": 0.625
+      },
+      "candidate": {
+        "samples": 50,
+        "loss": 0.70625,
+        "action_accuracy": [
+          0.56,
+          0.56,
+          0.7,
+          0.54
+        ],
+        "first_action_accuracy": 0.56,
+        "four_action_exact_match": 0.12,
+        "mean_action_accuracy": 0.5900000000000001
+      },
+      "candidate_minus_baseline": {
+        "loss": 0.012286758422851651,
+        "action_accuracy": [
+          -0.019999999999999907,
+          -0.039999999999999925,
+          0.0,
+          -0.07999999999999996
+        ],
+        "mean_action_accuracy": -0.03499999999999992,
+        "first_action_accuracy": -0.019999999999999907,
+        "four_action_exact_match": -0.020000000000000018
+      }
+    },
+    "short": {
+      "baseline": {
+        "samples": 50,
+        "loss": 0.7865625,
+        "action_accuracy": [
+          0.54,
+          0.66,
+          0.64,
+          0.56
+        ],
+        "first_action_accuracy": 0.54,
+        "four_action_exact_match": 0.18,
+        "mean_action_accuracy": 0.6000000000000001
+      },
+      "candidate": {
+        "samples": 50,
+        "loss": 0.708125,
+        "action_accuracy": [
+          0.52,
+          0.66,
+          0.7,
+          0.58
+        ],
+        "first_action_accuracy": 0.52,
+        "four_action_exact_match": 0.12,
+        "mean_action_accuracy": 0.615
+      },
+      "candidate_minus_baseline": {
+        "loss": -0.07843750000000005,
+        "action_accuracy": [
+          -0.020000000000000018,
+          0.0,
+          0.05999999999999994,
+          0.019999999999999907
+        ],
+        "mean_action_accuracy": 0.014999999999999902,
+        "first_action_accuracy": -0.020000000000000018,
+        "four_action_exact_match": -0.06
+      }
+    }
+  }
+}

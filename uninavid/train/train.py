@@ -130,6 +130,7 @@ class ModelArguments:
     history_ffn_dim: int = field(default=2048)
     history_dropout: float = field(default=0.1)
     history_max_frames: int = field(default=512)
+    history_goal_conditioned: bool = field(default=False)
     tune_history_compressor: bool = field(default=False)
     run_type: Optional[str] = field(default="train") # train / eval
 
@@ -147,6 +148,7 @@ class DataArguments:
     image_grid_pinpoints: Optional[str] = field(default=None)
     input_prompt: Optional[str] = field(default=None)
     refine_prompt: Optional[bool] = field(default=False)
+    video_augmentation: bool = field(default=True)
 
 
 @dataclass
@@ -1086,7 +1088,11 @@ class LazySupervisedDataset(Dataset):
                         sample_fps = round(vr.get_avg_fps()/self.data_args.video_fps)
                         frame_idx = [i for i in range(0, len(vr), sample_fps)]
                         video = vr.get_batch(frame_idx).asnumpy()
-                        if  "NAV_ID" in self.list_data_dict[i]['id'] and len(frame_idx) > 1: # TODO: temp fix for nav
+                        if (
+                            "NAV_ID" in self.list_data_dict[i]['id']
+                            and len(frame_idx) > 1
+                            and self.data_args.video_augmentation
+                        ):
                             assert len(video) > 1
                             
                             last_frame_index = len(video) - 1                           
@@ -1142,6 +1148,16 @@ class LazySupervisedDataset(Dataset):
             prompt = data_dict['prompt']
         else:
             prompt = None
+
+        goal_text = self.list_data_dict[i].get("instruction")
+        if goal_text is None and "goal" in self.list_data_dict[i]:
+            goal_text = f"Search for a {self.list_data_dict[i]['goal']}."
+        if goal_text is not None:
+            goal_tokens = self.tokenizer(
+                goal_text,
+                return_tensors="pt",
+                add_special_tokens=True,
+            )
         
         if suffix == 'pkl':
             prompt = [query_prompt]
@@ -1163,6 +1179,9 @@ class LazySupervisedDataset(Dataset):
         # prompt exist in the data
         if prompt is not None:
             data_dict['prompt'] = prompt
+        if goal_text is not None:
+            data_dict['goal_input_ids'] = goal_tokens.input_ids[0]
+            data_dict['goal_attention_mask'] = goal_tokens.attention_mask[0]
 
         return data_dict
 
@@ -1202,6 +1221,18 @@ class DataCollatorForSupervisedDataset(object):
 
         if 'prompt' in instances[0]:
             batch['prompts'] = [instance['prompt'] for instance in instances]
+
+        if 'goal_input_ids' in instances[0]:
+            batch['goal_input_ids'] = torch.nn.utils.rnn.pad_sequence(
+                [instance['goal_input_ids'] for instance in instances],
+                batch_first=True,
+                padding_value=self.tokenizer.pad_token_id,
+            )
+            batch['goal_attention_mask'] = torch.nn.utils.rnn.pad_sequence(
+                [instance['goal_attention_mask'] for instance in instances],
+                batch_first=True,
+                padding_value=0,
+            )
 
         return batch
 

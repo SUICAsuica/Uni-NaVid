@@ -54,6 +54,12 @@ def main():
     print(f"supervised_tokens={supervised_tokens}")
     print(f"batch_input_shape={tuple(batch['input_ids'].shape)}")
     print(f"batch_video_shape={tuple(batch['images'][0].shape)}")
+    if 'goal_input_ids' in batch:
+        print(f"batch_goal_shape={tuple(batch['goal_input_ids'].shape)}")
+        print(
+            "goal_tokens="
+            f"{batch['goal_attention_mask'].sum(dim=1).tolist()}"
+        )
 
 
 if __name__ == "__main__":

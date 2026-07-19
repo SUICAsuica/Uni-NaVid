@@ -81,6 +81,9 @@ class UniNaVIDMetaModel:
         self.config.history_ffn_dim = getattr(model_args, "history_ffn_dim", 2048)
         self.config.history_dropout = getattr(model_args, "history_dropout", 0.1)
         self.config.history_max_frames = getattr(model_args, "history_max_frames", 512)
+        self.config.history_goal_conditioned = getattr(
+            model_args, "history_goal_conditioned", False
+        )
         
         vision_tower = build_vision_tower(model_args)
 
@@ -248,7 +251,15 @@ class UniNaVIDMetaForCausalLM(ABC):
 
 
 
-    def encode_images(self, images, prompts=None, image_counts=None, long_video=False):
+    def encode_images(
+        self,
+        images,
+        prompts=None,
+        image_counts=None,
+        long_video=False,
+        goal_features=None,
+        goal_attention_mask=None,
+    ):
         if long_video:
             # use pre-computed features
             image_features = images
@@ -260,12 +271,22 @@ class UniNaVIDMetaForCausalLM(ABC):
         image_features, video_or_not, nav_or_not, final_token_length_lst = self.vlm_attention(image_features,
                                                                                               prompts=prompts,
                                                                                               image_counts=image_counts,
-                                                                                              long_video=long_video)
+                                                                                              long_video=long_video,
+                                                                                              goal_features=goal_features,
+                                                                                              goal_attention_mask=goal_attention_mask)
         return image_features, video_or_not, nav_or_not, final_token_length_lst
 
     
 
-    def vlm_attention(self, image_features, prompts=None, image_counts=None, long_video=False):
+    def vlm_attention(
+        self,
+        image_features,
+        prompts=None,
+        image_counts=None,
+        long_video=False,
+        goal_features=None,
+        goal_attention_mask=None,
+    ):
         compress_type = self.config.compress_type
         history_compressor_type = getattr(
             self.config, "history_compressor_type", "heuristic"
@@ -307,7 +328,15 @@ class UniNaVIDMetaForCausalLM(ABC):
             final_token, final_token_nav = self.token_generation(
                 img_feat_prompt,
                 image_counts=None if image_counts is None else image_counts[_idx],
-                navigation=is_navigation
+                navigation=is_navigation,
+                goal_features=(
+                    None if goal_features is None else goal_features[_idx:_idx + 1]
+                ),
+                goal_attention_mask=(
+                    None
+                    if goal_attention_mask is None
+                    else goal_attention_mask[_idx:_idx + 1]
+                ),
             )
 
             if is_navigation and final_token_nav is None:
@@ -363,7 +392,14 @@ class UniNaVIDMetaForCausalLM(ABC):
 
 
 
-    def token_generation(self, vis_embed, image_counts=None, navigation=False):
+    def token_generation(
+        self,
+        vis_embed,
+        image_counts=None,
+        navigation=False,
+        goal_features=None,
+        goal_attention_mask=None,
+    ):
         
                                 
         def process_grid(vis_embed, grid_size):
@@ -397,7 +433,11 @@ class UniNaVIDMetaForCausalLM(ABC):
                     history = vis_embed.new_empty((0, 64, vis_embed.shape[-1]))
                 else:
                     history = process_grid(history, 8)
-                vis_embed = self.get_model().history_compressor(history.unsqueeze(0))
+                vis_embed = self.get_model().history_compressor(
+                    history.unsqueeze(0),
+                    goal_features=goal_features,
+                    goal_attention_mask=goal_attention_mask,
+                )
             elif history_compressor_type == "heuristic":
                 vis_embed = process_grid(vis_embed, grid_size)
             else:
@@ -426,8 +466,17 @@ class UniNaVIDMetaForCausalLM(ABC):
         self.prompts = prompts
 
 
-    def prepare_inputs_labels_for_multimodal(self, input_ids, attention_mask, past_key_values, labels, images,
-                                             prompts=None):
+    def prepare_inputs_labels_for_multimodal(
+        self,
+        input_ids,
+        attention_mask,
+        past_key_values,
+        labels,
+        images,
+        prompts=None,
+        goal_input_ids=None,
+        goal_attention_mask=None,
+    ):
         if 'grid' in self.config.compress_type:
             grid_size = int(self.config.compress_type.split('grid:')[-1])
             if grid_size == 2:
@@ -453,6 +502,9 @@ class UniNaVIDMetaForCausalLM(ABC):
             return input_ids, attention_mask, past_key_values, None, labels
 
         long_video = False
+        goal_features = None
+        if goal_input_ids is not None:
+            goal_features = self.get_model().embed_tokens(goal_input_ids).detach()
 
         if type(images) is list or images.ndim == 5:
             # not reseshape for long video
@@ -462,10 +514,14 @@ class UniNaVIDMetaForCausalLM(ABC):
             concat_images = torch.cat(images, dim=0)
             image_features, video_or_not, nav_or_not, final_token_length_lst = self.encode_images(concat_images,
                                                                                                   prompts, image_counts,
-                                                                                                  long_video=long_video)
+                                                                                                  long_video=long_video,
+                                                                                                  goal_features=goal_features,
+                                                                                                  goal_attention_mask=goal_attention_mask)
         else:
             image_features, video_or_not, nav_or_not, final_token_length_lst = self.encode_images(images, prompts,
-                                                                                                  long_video=long_video)
+                                                                                                  long_video=long_video,
+                                                                                                  goal_features=goal_features,
+                                                                                                  goal_attention_mask=goal_attention_mask)
 
         new_input_embeds = []
         new_labels = [] if labels is not None else None

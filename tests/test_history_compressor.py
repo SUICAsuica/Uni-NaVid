@@ -62,6 +62,43 @@ class HistoryCompressorTest(unittest.TestCase):
         with self.assertRaisesRegex(ValueError, "expected 64 tokens per frame"):
             compressor(torch.randn(1, 2, 16, 32))
 
+    def test_goal_conditioning_changes_output_and_receives_gradients(self):
+        compressor = LearnedHistoryCompressor(
+            vision_dim=32,
+            hidden_dim=16,
+            num_queries=8,
+            num_heads=4,
+            num_layers=1,
+            ffn_dim=32,
+            dropout=0.0,
+            goal_dim=24,
+        ).eval()
+        history = torch.randn(1, 3, 64, 32)
+        goal_mask = torch.ones(1, 4, dtype=torch.long)
+        chair_goal = torch.randn(1, 4, 24)
+        toilet_goal = torch.randn(1, 4, 24)
+
+        chair_output = compressor(history, chair_goal, goal_mask)
+        toilet_output = compressor(history, toilet_goal, goal_mask)
+
+        self.assertFalse(torch.allclose(chair_output, toilet_output, atol=1e-6))
+        chair_output.square().mean().backward()
+        self.assertIsNotNone(compressor.goal_projection[1].weight.grad)
+
+    def test_goal_conditioning_rejects_missing_goal(self):
+        compressor = LearnedHistoryCompressor(
+            vision_dim=32,
+            hidden_dim=16,
+            num_queries=8,
+            num_heads=4,
+            num_layers=1,
+            ffn_dim=32,
+            dropout=0.0,
+            goal_dim=24,
+        )
+        with self.assertRaisesRegex(ValueError, "requires goal features"):
+            compressor(torch.randn(1, 2, 64, 32))
+
 
 class DummyModel(nn.Module):
     def __init__(self):
