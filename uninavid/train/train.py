@@ -122,6 +122,15 @@ class ModelArguments:
     mm_use_im_patch_token: bool = field(default=True)
     mm_vision_select_feature: Optional[str] = field(default="patch")
     compress_type: Optional[str] = field(default=None)
+    history_compressor_type: str = field(default="heuristic")
+    history_num_queries: int = field(default=64)
+    history_hidden_size: int = field(default=512)
+    history_num_heads: int = field(default=8)
+    history_num_layers: int = field(default=2)
+    history_ffn_dim: int = field(default=2048)
+    history_dropout: float = field(default=0.1)
+    history_max_frames: int = field(default=512)
+    tune_history_compressor: bool = field(default=False)
     run_type: Optional[str] = field(default="train") # train / eval
 
 @dataclass
@@ -233,7 +242,10 @@ def get_mm_adapter_state_maybe_zero_3(named_params, keys_to_match):
 def find_all_linear_names(model):
     cls = torch.nn.Linear
     lora_module_names = set()
-    multimodal_keywords = ['mm_projector', 'vision_tower', 'vision_resampler', 'vlm_att']
+    multimodal_keywords = [
+        'mm_projector', 'vision_tower', 'vision_resampler', 'vlm_att',
+        'history_compressor',
+    ]
     for name, module in model.named_modules():
         if any(mm_keyword in name for mm_keyword in multimodal_keywords):
             continue
@@ -250,10 +262,16 @@ def find_all_linear_names(model):
 def safe_save_model_for_hf_trainer(trainer: transformers.Trainer, output_dir: str):
     """Collects the state dict and dump to disk."""
 
-    if getattr(trainer.args, "tune_mm_mlp_adapter", False):
-        # Only save Adapter
-        # keys_to_match = ['mm_projector']
-        keys_to_match = ['mm_projector', 'vision_resampler', 'vlm_att']
+    tune_mm_adapter = getattr(trainer.args, "tune_mm_mlp_adapter", False)
+    tune_history_compressor = getattr(
+        trainer.args, "tune_history_compressor", False
+    )
+    if tune_mm_adapter or tune_history_compressor:
+        keys_to_match = []
+        if tune_mm_adapter:
+            keys_to_match.extend(['mm_projector', 'vision_resampler', 'vlm_att'])
+        if tune_history_compressor:
+            keys_to_match.append('history_compressor')
         if getattr(trainer.args, "use_im_start_end", False):
             keys_to_match.extend(['embed_tokens', 'embed_in'])
 
@@ -268,7 +286,13 @@ def safe_save_model_for_hf_trainer(trainer: transformers.Trainer, output_dir: st
                 os.makedirs(mm_projector_folder, exist_ok=True)
                 torch.save(weight_to_save, os.path.join(mm_projector_folder, f'{current_folder}.bin'))
             else:
-                torch.save(weight_to_save, os.path.join(output_dir, f'mm_projector.bin'))
+                if tune_mm_adapter and tune_history_compressor:
+                    filename = 'multimodal_adapters.bin'
+                elif tune_history_compressor:
+                    filename = 'history_compressor.bin'
+                else:
+                    filename = 'mm_projector.bin'
+                torch.save(weight_to_save, os.path.join(output_dir, filename))
         return
 
     if trainer.deepspeed:
@@ -1337,6 +1361,25 @@ def train():
             model.requires_grad_(False)
             for p in model.get_model().mm_projector.parameters():
                 p.requires_grad = True
+
+        model.config.tune_history_compressor = (
+            training_args.tune_history_compressor
+        ) = model_args.tune_history_compressor
+        if model_args.tune_history_compressor:
+            if model_args.history_compressor_type != "cross_attention":
+                raise ValueError(
+                    "--tune_history_compressor requires "
+                    "--history_compressor_type cross_attention"
+                )
+            if not model_args.tune_mm_mlp_adapter:
+                model.requires_grad_(False)
+            model.get_model().history_compressor.requires_grad_(True)
+
+        if model_args.history_compressor_type == "cross_attention":
+            model.get_model().history_compressor.to(
+                dtype=compute_dtype,
+                device=training_args.device,
+            )
 
         model.config.freeze_mm_mlp_adapter = training_args.freeze_mm_mlp_adapter
         if training_args.freeze_mm_mlp_adapter:

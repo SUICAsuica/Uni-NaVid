@@ -27,6 +27,7 @@ import torch.nn.functional as F
 
 from .multimodal_encoder.builder import build_vision_tower
 from .multimodal_projector.builder import build_vision_projector
+from .history_compressor import build_history_compressor
 
 
 from uninavid.constants import IGNORE_INDEX, IMAGE_TOKEN_INDEX, DEFAULT_IMAGE_PATCH_TOKEN, DEFAULT_IM_START_TOKEN, DEFAULT_IM_END_TOKEN, VIDEO_START_SPECIAL_TOKEN, VIDEO_END_SPECIAL_TOKEN, IMAGE_START_TOKEN, IMAGE_END_TOKEN, NAVIGATION_SPECIAL_TOKEN, NAVIGATION_IDENTIFIER, IAMGE_SEPARATOR
@@ -42,6 +43,8 @@ class UniNaVIDMetaModel:
         if hasattr(config, "mm_vision_tower"):
             self.vision_tower = build_vision_tower(config, delay_load=True)
             self.mm_projector = build_vision_projector(config)
+            if getattr(config, "history_compressor_type", "heuristic") == "cross_attention":
+                self.history_compressor = build_history_compressor(config)
 
     def get_vision_tower(self):
         vision_tower = getattr(self, 'vision_tower', None)
@@ -68,6 +71,16 @@ class UniNaVIDMetaModel:
         self.config.image_processor = getattr(model_args, 'image_processor', None)
         self.config.compress_type = getattr(model_args, "compress_type", None)
         self.config.run_type = model_args.run_type
+        self.config.history_compressor_type = getattr(
+            model_args, "history_compressor_type", "heuristic"
+        )
+        self.config.history_num_queries = getattr(model_args, "history_num_queries", 64)
+        self.config.history_hidden_size = getattr(model_args, "history_hidden_size", 512)
+        self.config.history_num_heads = getattr(model_args, "history_num_heads", 8)
+        self.config.history_num_layers = getattr(model_args, "history_num_layers", 2)
+        self.config.history_ffn_dim = getattr(model_args, "history_ffn_dim", 2048)
+        self.config.history_dropout = getattr(model_args, "history_dropout", 0.1)
+        self.config.history_max_frames = getattr(model_args, "history_max_frames", 512)
         
         vision_tower = build_vision_tower(model_args)
 
@@ -89,6 +102,14 @@ class UniNaVIDMetaModel:
             # In case it is frozen by LoRA
             for p in self.mm_projector.parameters():
                 p.requires_grad = True
+
+        if self.config.history_compressor_type == "cross_attention":
+            if getattr(self, "history_compressor", None) is None:
+                self.history_compressor = build_history_compressor(self.config)
+        elif self.config.history_compressor_type != "heuristic":
+            raise ValueError(
+                f"Unsupported history compressor: {self.config.history_compressor_type}"
+            )
 
         if pretrain_mm_mlp_adapter is not None:
             mm_projector_weights = torch.load(pretrain_mm_mlp_adapter, map_location='cpu')
@@ -246,6 +267,9 @@ class UniNaVIDMetaForCausalLM(ABC):
 
     def vlm_attention(self, image_features, prompts=None, image_counts=None, long_video=False):
         compress_type = self.config.compress_type
+        history_compressor_type = getattr(
+            self.config, "history_compressor_type", "heuristic"
+        )
         compress_grid_sizes = {"grid:2": 4, "grid:4": 16, "mean": 1}
 
         nav_size = compress_grid_sizes.get(compress_type)
@@ -295,7 +319,14 @@ class UniNaVIDMetaForCausalLM(ABC):
                     final_token_nav = final_token_nav[None].expand(len(prompt), -1, -1, -1).flatten(1, 2)
                     assert final_token_nav.shape[0] == 1 and final_token_nav.shape[1] == 64 and final_token.shape[0] == 1
                     
-                    if self.config.run_type == "eval":
+                    if history_compressor_type == "cross_attention":
+                        if self.config.run_type == "eval":
+                            raise NotImplementedError(
+                                "Online cache inference is not implemented for the "
+                                "cross-attention history compressor"
+                            )
+                        lengths_list = [self.get_model().history_compressor.num_queries]
+                    elif self.config.run_type == "eval":
                         final_token, lengths_list = self.online_process_tensor(nav_size)
                         final_token = final_token.unsqueeze(0)
                     else:
@@ -354,10 +385,25 @@ class UniNaVIDMetaForCausalLM(ABC):
         if image_counts is None or (image_counts == 1 and not navigation):
             vis_embed = process_grid(vis_embed, 8)
         elif navigation:
-               
             vis_embed_nav = vis_embed[-1:]
             vis_embed_nav = process_grid(vis_embed_nav, 8)
-            vis_embed = process_grid(vis_embed, grid_size)
+
+            history_compressor_type = getattr(
+                self.config, "history_compressor_type", "heuristic"
+            )
+            if history_compressor_type == "cross_attention":
+                history = vis_embed[:-1]
+                if history.shape[0] == 0:
+                    history = vis_embed.new_empty((0, 64, vis_embed.shape[-1]))
+                else:
+                    history = process_grid(history, 8)
+                vis_embed = self.get_model().history_compressor(history.unsqueeze(0))
+            elif history_compressor_type == "heuristic":
+                vis_embed = process_grid(vis_embed, grid_size)
+            else:
+                raise ValueError(
+                    f"Unsupported history compressor: {history_compressor_type}"
+                )
         
         else:
             vis_embed = process_grid(vis_embed, grid_size)
@@ -694,5 +740,3 @@ class UniNaVIDMetaForCausalLM(ABC):
                     p.requires_grad = False
 
    
-
-
