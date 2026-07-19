@@ -993,6 +993,8 @@ class LazySupervisedDataset(Dataset):
 
     def __getitem__(self, i) -> Dict[str, torch.Tensor]:
         attempt, max_attempt = 0, 10
+        requested_index = i
+        last_error = None
         while attempt < max_attempt:
             try:
                 sources = self.list_data_dict[i]
@@ -1089,10 +1091,18 @@ class LazySupervisedDataset(Dataset):
                     sources = copy.deepcopy([e["conversations"] for e in sources])
                 
                 break
-            except:
+            except Exception as exc:
+                last_error = exc
                 attempt += 1
-                print(f"Error in loading {i}, retrying...")
+                print(
+                    f"Error in loading {i} ({type(exc).__name__}: {exc}), "
+                    f"retrying..."
+                )
                 i = random.randint(0, len(self.list_data_dict)-1)
+        else:
+            raise RuntimeError(
+                f"Failed to load dataset item {requested_index} after {max_attempt} attempts"
+            ) from last_error
                 
 
         has_image = ('image' in self.list_data_dict[i]) or ('video' in self.list_data_dict[i])
@@ -1393,4 +1403,3 @@ def train():
 
 if __name__ == "__main__":
     train()
-
