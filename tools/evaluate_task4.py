@@ -48,17 +48,26 @@ def history_bin(time_index):
     return "extra_long"
 
 
-def load_history_adapter(model, path):
+def load_multimodal_adapter(model, path):
     state = torch.load(path, map_location="cpu", weights_only=True)
-    prefix = "model.history_compressor."
+    compressor_prefix = "model.history_compressor."
     compressor_state = {
-        key[len(prefix):]: value
+        key[len(compressor_prefix):]: value
         for key, value in state.items()
-        if key.startswith(prefix)
+        if key.startswith(compressor_prefix)
     }
     if not compressor_state:
         raise ValueError(f"No history compressor weights found in {path}")
     model.get_model().history_compressor.load_state_dict(compressor_state)
+
+    projector_prefix = "model.mm_projector."
+    projector_state = {
+        key[len(projector_prefix):]: value
+        for key, value in state.items()
+        if key.startswith(projector_prefix)
+    }
+    if projector_state:
+        model.get_model().mm_projector.load_state_dict(projector_state)
 
 
 def build_model(args, device):
@@ -93,7 +102,7 @@ def build_model(args, device):
     if args.adapter is not None:
         if not learned:
             raise ValueError("--adapter is only valid for learned compressor modes")
-        load_history_adapter(model, args.adapter)
+        load_multimodal_adapter(model, args.adapter)
     elif learned:
         raise ValueError("Learned compressor modes require --adapter")
 

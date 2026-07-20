@@ -13,6 +13,7 @@ video_augmentation="${VIDEO_AUGMENTATION:-True}"
 learning_rate="${LEARNING_RATE:-1e-4}"
 warmup_ratio="${WARMUP_RATIO:-0.03}"
 lr_scheduler_type="${LR_SCHEDULER_TYPE:-cosine}"
+tune_mm_mlp_adapter="${TUNE_MM_MLP_ADAPTER:-False}"
 
 cd "${repo_root}"
 
@@ -26,7 +27,7 @@ cd "${repo_root}"
   --image_processor "${repo_root}/uninavid/processor/clip-patch14-224" \
   --video_augmentation "${video_augmentation}" \
   --tune_vision_encoder False \
-  --tune_mm_mlp_adapter False \
+  --tune_mm_mlp_adapter "${tune_mm_mlp_adapter}" \
   --history_compressor_type cross_attention \
   --history_num_queries 64 \
   --history_hidden_size 512 \
