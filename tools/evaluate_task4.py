@@ -31,6 +31,8 @@ def parse_args():
         required=True,
     )
     parser.add_argument("--adapter", type=Path)
+    parser.add_argument("--history-num-layers", type=int, default=2)
+    parser.add_argument("--history-dropout", type=float, default=0.1)
     parser.add_argument("--output", type=Path, required=True)
     parser.add_argument("--max-samples", type=int)
     return parser.parse_args()
@@ -81,9 +83,9 @@ def build_model(args, device):
         history_num_queries=64,
         history_hidden_size=512,
         history_num_heads=8,
-        history_num_layers=2,
+        history_num_layers=args.history_num_layers,
         history_ffn_dim=2048,
-        history_dropout=0.1,
+        history_dropout=args.history_dropout,
         history_max_frames=512,
         history_goal_conditioned=goal_conditioned,
     )

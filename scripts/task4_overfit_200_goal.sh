@@ -7,6 +7,12 @@ manifest="${MANIFEST:-${data_root}/task4_overfit_200_goal.json}"
 model_path="${MODEL_PATH:-${repo_root}/model_zoo/uninavid-7b-full-224-video-fps-1-grid-2}"
 output_dir="${OUTPUT_DIR:-${repo_root}/outputs/task4-overfit-200-goal}"
 max_steps="${MAX_STEPS:-400}"
+history_num_layers="${HISTORY_NUM_LAYERS:-2}"
+history_dropout="${HISTORY_DROPOUT:-0.1}"
+video_augmentation="${VIDEO_AUGMENTATION:-True}"
+learning_rate="${LEARNING_RATE:-1e-4}"
+warmup_ratio="${WARMUP_RATIO:-0.03}"
+lr_scheduler_type="${LR_SCHEDULER_TYPE:-cosine}"
 
 cd "${repo_root}"
 
@@ -18,16 +24,16 @@ cd "${repo_root}"
   --video_folder "${data_root}" \
   --vision_tower "${repo_root}/model_zoo/eva_vit_g.pth" \
   --image_processor "${repo_root}/uninavid/processor/clip-patch14-224" \
-  --video_augmentation True \
+  --video_augmentation "${video_augmentation}" \
   --tune_vision_encoder False \
   --tune_mm_mlp_adapter False \
   --history_compressor_type cross_attention \
   --history_num_queries 64 \
   --history_hidden_size 512 \
   --history_num_heads 8 \
-  --history_num_layers 2 \
+  --history_num_layers "${history_num_layers}" \
   --history_ffn_dim 2048 \
-  --history_dropout 0.1 \
+  --history_dropout "${history_dropout}" \
   --history_max_frames 512 \
   --history_goal_conditioned True \
   --tune_history_compressor True \
@@ -44,10 +50,10 @@ cd "${repo_root}"
   --max_steps "${max_steps}" \
   --per_device_train_batch_size 1 \
   --gradient_accumulation_steps 1 \
-  --learning_rate 1e-4 \
+  --learning_rate "${learning_rate}" \
   --weight_decay 0 \
-  --warmup_ratio 0.03 \
-  --lr_scheduler_type cosine \
+  --warmup_ratio "${warmup_ratio}" \
+  --lr_scheduler_type "${lr_scheduler_type}" \
   --logging_steps 10 \
   --save_strategy no \
   --evaluation_strategy no \
