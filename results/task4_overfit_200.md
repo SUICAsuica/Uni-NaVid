@@ -103,3 +103,89 @@ LR_SCHEDULER_TYPE=constant \
 
 Machine-readable follow-up metrics are in
 `results/task4_overfit_200_1layer_2000_comparison.json`.
+
+## Follow-up: jointly train the multimodal projector
+
+The next controlled run kept the one-layer, 2000-step configuration and also
+trained the existing multimodal projector:
+
+- Cross-Attention decoder layers: 1
+- Dropout: 0
+- Video augmentation: disabled
+- Learning rate: constant `3e-4`, no warmup
+- Training: 2000 steps (10 epochs)
+- Trainable parameters: history compressor, goal projector, and `mm_projector`
+
+The saved adapter contains 36 history-compressor tensors and 4 multimodal-
+projector tensors, with no LLM or vision-encoder weights. Mean logged loss by
+epoch decreased from 0.8368 in epoch 1 to 0.7130 in epoch 10, but evaluation was
+worse than both comparison methods.
+
+| Metric | Heuristic | Compressor only | Compressor + projector |
+| --- | ---: | ---: | ---: |
+| Loss | 0.7073 | 0.5637 | 0.7072 |
+| Mean action accuracy | 62.625% | 68.0% | 56.5% |
+| First action accuracy | 59.0% | 60.0% | 51.5% |
+| Four-action exact match | 17.0% | 18.0% | 8.5% |
+
+Jointly updating the projector at the same `3e-4` learning rate did not reproduce
+the 20-sample memorization result at 200 samples. The projector is shared by the
+compressed history and the uncompressed current frame, so changing it can also
+damage the pretrained current-frame interface. A useful next diagnostic is to
+use separate learning rates: keep the compressor at `3e-4` and update the
+projector conservatively, for example at `1e-5`, preferably from the successful
+compressor-only checkpoint. Adding Q-Former depth or LLM LoRA is not justified
+until this interface effect is isolated.
+
+Machine-readable metrics are in
+`results/task4_overfit_200_with_projector_comparison.json`.
+
+## Follow-up: lower learning rate for the multimodal projector
+
+The final controlled run used separate optimizer groups while keeping all other
+settings unchanged:
+
+- History compressor learning rate: constant `3e-4`
+- Multimodal projector learning rate: constant `1e-5`
+- Cross-Attention decoder layers: 1
+- Dropout: 0
+- Video augmentation: disabled
+- Training: 2000 steps (10 epochs), seed 42
+
+Mean logged loss decreased monotonically by epoch from 0.7173 to 0.5109. The
+aggregate train loss was 0.6030, and the minimum logged 10-step loss was 0.2987.
+
+| Metric | Heuristic | Compressor only | Projector at `3e-4` | Projector at `1e-5` |
+| --- | ---: | ---: | ---: | ---: |
+| Loss | 0.7073 | 0.5637 | 0.7072 | **0.4629** |
+| Mean action accuracy | 62.625% | 68.0% | 56.5% | **77.5%** |
+| First action accuracy | 59.0% | 60.0% | 51.5% | **76.0%** |
+| Four-action exact match | 17.0% | 18.0% | 8.5% | **41.0%** |
+
+The lower projector learning rate improved mean action accuracy by 9.5 points
+and exact match by 23 points over the compressor-only run. This supports the
+interface-damage hypothesis: the projector benefits from adaptation, but its
+pretrained mapping is damaged when it is updated at the compressor's learning
+rate. The run still falls short of the 95% memorization target and remains a
+teacher-forced evaluation on training samples. The next step is a longer
+low-projector-LR overfit run or checkpointed evaluation before moving to held-out
+episodes.
+
+The run used:
+
+```bash
+OUTPUT_DIR=outputs/task4-overfit-200-projector-lr1e-5 \
+MAX_STEPS=2000 \
+HISTORY_NUM_LAYERS=1 \
+HISTORY_DROPOUT=0 \
+VIDEO_AUGMENTATION=False \
+LEARNING_RATE=3e-4 \
+WARMUP_RATIO=0 \
+LR_SCHEDULER_TYPE=constant \
+TUNE_MM_MLP_ADAPTER=True \
+LR_MULTI='mm_projector:0.03333333333333333' \
+./scripts/task4_overfit_200_goal.sh
+```
+
+Machine-readable metrics are in
+`results/task4_overfit_200_projector_lr1e-5_comparison.json`.

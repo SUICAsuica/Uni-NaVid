@@ -14,6 +14,12 @@ learning_rate="${LEARNING_RATE:-1e-4}"
 warmup_ratio="${WARMUP_RATIO:-0.03}"
 lr_scheduler_type="${LR_SCHEDULER_TYPE:-cosine}"
 tune_mm_mlp_adapter="${TUNE_MM_MLP_ADAPTER:-False}"
+lr_multi="${LR_MULTI:-}"
+
+extra_train_args=()
+if [[ -n "${lr_multi}" ]]; then
+  extra_train_args+=(--lr_multi "${lr_multi}")
+fi
 
 cd "${repo_root}"
 
@@ -63,4 +69,5 @@ cd "${repo_root}"
   --dataloader_num_workers 2 \
   --lazy_preprocess True \
   --report_to none \
-  --seed 42
+  --seed 42 \
+  "${extra_train_args[@]}"
