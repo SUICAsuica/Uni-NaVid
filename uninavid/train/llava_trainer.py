@@ -14,6 +14,7 @@ from fairscale.optim import OSS
 from torch.utils.data import Sampler
 
 from transformers import Trainer
+from transformers.trainer import TRAINING_ARGS_NAME
 from transformers.pytorch_utils import ALL_LAYERNORM_LAYERS
 from transformers.trainer_pt_utils import (
     get_parameter_names,
@@ -23,6 +24,7 @@ from transformers.trainer_utils import (
     has_length
 )
 from transformers.utils import (
+    WEIGHTS_NAME,
     is_sagemaker_mp_enabled,
     logging,
 )
@@ -280,28 +282,33 @@ class LLaVATrainer(Trainer):
         return self.optimizer
 
     def _save_checkpoint(self, model, trial, metrics=None):
-        if getattr(self.args, 'tune_mm_mlp_adapter', False):
-            from transformers.trainer_utils import PREFIX_CHECKPOINT_DIR
-            checkpoint_folder = f"{PREFIX_CHECKPOINT_DIR}-{self.state.global_step}"
-
-            run_dir = self._get_output_dir(trial=trial)
-            output_dir = os.path.join(run_dir, checkpoint_folder)
-
-            # Only save Adapter
-            keys_to_match = ['mm_projector', 'vision_resampler', 'vlm_att']
-            if getattr(self.args, "use_im_start_end", False):
-                keys_to_match.extend(['embed_tokens', 'embed_in'])
-
-            weight_to_save = get_mm_adapter_state_maybe_zero_3(self.model.named_parameters(), keys_to_match)
-
-            if self.args.local_rank == 0 or self.args.local_rank == -1:
-                self.model.config.save_pretrained(output_dir)
-                torch.save(weight_to_save, os.path.join(output_dir, f'mm_projector.bin'))
-        else:
-            super(LLaVATrainer, self)._save_checkpoint(model, trial, metrics)
+        super()._save_checkpoint(model, trial, metrics)
 
     def _save(self, output_dir: Optional[str] = None, state_dict=None):
-        if getattr(self.args, 'tune_mm_mlp_adapter', False):
-            pass
-        else:
-            super(LLaVATrainer, self)._save(output_dir, state_dict)
+        tune_mm_adapter = getattr(self.args, "tune_mm_mlp_adapter", False)
+        tune_history_compressor = getattr(
+            self.args, "tune_history_compressor", False
+        )
+        if not (tune_mm_adapter or tune_history_compressor):
+            super()._save(output_dir, state_dict)
+            return
+
+        output_dir = output_dir or self.args.output_dir
+        os.makedirs(output_dir, exist_ok=True)
+        keys_to_match = []
+        if tune_mm_adapter:
+            keys_to_match.extend(["mm_projector", "vision_resampler", "vlm_att"])
+        if tune_history_compressor:
+            keys_to_match.append("history_compressor")
+        if getattr(self.args, "use_im_start_end", False):
+            keys_to_match.extend(["embed_tokens", "embed_in"])
+
+        adapter_state = get_mm_adapter_state_maybe_zero_3(
+            self.model.named_parameters(), keys_to_match
+        )
+        if self.args.should_save:
+            self.model.config.save_pretrained(output_dir)
+            torch.save(adapter_state, os.path.join(output_dir, WEIGHTS_NAME))
+            if self.tokenizer is not None:
+                self.tokenizer.save_pretrained(output_dir)
+            torch.save(self.args, os.path.join(output_dir, TRAINING_ARGS_NAME))

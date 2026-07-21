@@ -115,11 +115,27 @@ class UniNaVIDMetaModel:
             )
 
         if pretrain_mm_mlp_adapter is not None:
-            mm_projector_weights = torch.load(pretrain_mm_mlp_adapter, map_location='cpu')
+            mm_projector_weights = torch.load(
+                pretrain_mm_mlp_adapter,
+                map_location="cpu",
+                weights_only=True,
+            )
             def get_w(weights, keyword):
-                return {k.split(keyword + '.')[1]: v for k, v in weights.items() if keyword in k}
+                return {
+                    k.split(keyword + ".", 1)[1]: v
+                    for k, v in weights.items()
+                    if keyword + "." in k
+                }
 
             self.mm_projector.load_state_dict(get_w(mm_projector_weights, 'mm_projector'))
+            history_weights = get_w(mm_projector_weights, "history_compressor")
+            if history_weights:
+                if getattr(self, "history_compressor", None) is None:
+                    raise ValueError(
+                        "Adapter contains history compressor weights, but the "
+                        "configured model has no history compressor"
+                    )
+                self.history_compressor.load_state_dict(history_weights)
 
 
 

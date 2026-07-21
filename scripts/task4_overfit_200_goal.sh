@@ -15,10 +15,17 @@ warmup_ratio="${WARMUP_RATIO:-0.03}"
 lr_scheduler_type="${LR_SCHEDULER_TYPE:-cosine}"
 tune_mm_mlp_adapter="${TUNE_MM_MLP_ADAPTER:-False}"
 lr_multi="${LR_MULTI:-}"
+save_strategy="${SAVE_STRATEGY:-no}"
+save_steps="${SAVE_STEPS:-500}"
+save_total_limit="${SAVE_TOTAL_LIMIT:-2}"
+pretrain_mm_mlp_adapter="${PRETRAIN_MM_MLP_ADAPTER:-}"
 
 extra_train_args=()
 if [[ -n "${lr_multi}" ]]; then
   extra_train_args+=(--lr_multi "${lr_multi}")
+fi
+if [[ -n "${pretrain_mm_mlp_adapter}" ]]; then
+  extra_train_args+=(--pretrain_mm_mlp_adapter "${pretrain_mm_mlp_adapter}")
 fi
 
 cd "${repo_root}"
@@ -62,7 +69,9 @@ cd "${repo_root}"
   --warmup_ratio "${warmup_ratio}" \
   --lr_scheduler_type "${lr_scheduler_type}" \
   --logging_steps 10 \
-  --save_strategy no \
+  --save_strategy "${save_strategy}" \
+  --save_steps "${save_steps}" \
+  --save_total_limit "${save_total_limit}" \
   --evaluation_strategy no \
   --model_max_length 2048 \
   --gradient_checkpointing False \

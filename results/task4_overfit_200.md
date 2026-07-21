@@ -189,3 +189,38 @@ LR_MULTI='mm_projector:0.03333333333333333' \
 
 Machine-readable metrics are in
 `results/task4_overfit_200_projector_lr1e-5_comparison.json`.
+
+## Follow-up: continue training from the successful adapter
+
+The successful 2000-step adapter was loaded as the initialization for another
+2000 optimizer steps. The optimizer state was restarted, while both the history
+compressor and multimodal projector weights were restored. Learning rates stayed
+at `3e-4` for the compressor and `1e-5` for the projector.
+
+The continuation run had an aggregate train loss of 0.3850. It saved resumable
+checkpoints containing 36 history-compressor tensors, 4 projector tensors, and
+the optimizer, scheduler, RNG, and Trainer state.
+
+| Metric | Initial 2000 steps | After 2000 more steps | Difference |
+| --- | ---: | ---: | ---: |
+| Loss | 0.4629 | **0.2286** | -0.2343 |
+| Mean action accuracy | 77.5% | **90.125%** | +12.625 pp |
+| First action accuracy | 76.0% | **91.0%** | +15.0 pp |
+| Four-action exact match | 41.0% | **72.0%** | +31.0 pp |
+
+Four-action exact match after continuation was 82% for extra-long histories,
+70% for long histories, 70% for medium histories, and 66% for short histories.
+The result confirms that the one-layer compressor and low-learning-rate
+projector continue to gain memorization capacity with a longer training budget.
+It remains below the 95% exact-match target and is still a teacher-forced
+training-set evaluation.
+
+This run also exposed two training-infrastructure issues that were fixed before
+the continuation:
+
+- The random seed is now set before constructing newly initialized modules.
+- Adapter checkpoints now include both trainable modules and the optimizer,
+  scheduler, RNG, and Trainer state, so they can be resumed normally.
+
+Machine-readable metrics are in
+`results/task4_overfit_200_projector_lr1e-5_continued_comparison.json`.
