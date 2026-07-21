@@ -1,0 +1,67 @@
+{
+  "mode": "goal_cross_attention",
+  "manifest": "/home/novel/uninavid-data/task4_uninavid_full/task4_overfit_200_goal.json",
+  "overall": {
+    "samples": 200,
+    "loss": 0.04653829395771027,
+    "action_accuracy": [
+      0.99,
+      0.985,
+      0.985,
+      0.985
+    ],
+    "first_action_accuracy": 0.99,
+    "four_action_exact_match": 0.95
+  },
+  "by_history_bin": {
+    "extra_long": {
+      "samples": 50,
+      "loss": 0.02467080354690552,
+      "action_accuracy": [
+        1.0,
+        1.0,
+        0.98,
+        0.98
+      ],
+      "first_action_accuracy": 1.0,
+      "four_action_exact_match": 0.96
+    },
+    "long": {
+      "samples": 50,
+      "loss": 0.04770584106445312,
+      "action_accuracy": [
+        1.0,
+        0.98,
+        1.0,
+        0.98
+      ],
+      "first_action_accuracy": 1.0,
+      "four_action_exact_match": 0.96
+    },
+    "medium": {
+      "samples": 50,
+      "loss": 0.07570302963256836,
+      "action_accuracy": [
+        0.98,
+        0.96,
+        0.96,
+        1.0
+      ],
+      "first_action_accuracy": 0.98,
+      "four_action_exact_match": 0.92
+    },
+    "short": {
+      "samples": 50,
+      "loss": 0.03807350158691406,
+      "action_accuracy": [
+        0.98,
+        1.0,
+        1.0,
+        0.98
+      ],
+      "first_action_accuracy": 0.98,
+      "four_action_exact_match": 0.96
+    }
+  },
+  "teacher_forced": true
+}

@@ -1,0 +1,86 @@
+{
+  "manifest": "/home/novel/uninavid-data/task4_uninavid_full/task4_heldout_episode_disjoint_goal.json",
+  "teacher_forced": true,
+  "baseline_mode": "heuristic",
+  "candidate_mode": "goal_cross_attention",
+  "baseline": {
+    "samples": 140,
+    "loss": 0.7639435282775334,
+    "action_accuracy": [
+      0.6214285714285714,
+      0.7071428571428572,
+      0.6928571428571428,
+      0.6714285714285714
+    ],
+    "first_action_accuracy": 0.6214285714285714,
+    "four_action_exact_match": 0.25,
+    "mean_action_accuracy": 0.6732142857142857
+  },
+  "candidate": {
+    "samples": 140,
+    "loss": 1.3565534319196428,
+    "action_accuracy": [
+      0.7071428571428572,
+      0.6785714285714286,
+      0.6428571428571429,
+      0.5642857142857143
+    ],
+    "first_action_accuracy": 0.7071428571428572,
+    "four_action_exact_match": 0.12857142857142856,
+    "mean_action_accuracy": 0.6482142857142856
+  },
+  "candidate_minus_baseline": {
+    "loss": 0.5926099036421094,
+    "action_accuracy": [
+      0.08571428571428574,
+      -0.02857142857142858,
+      -0.04999999999999993,
+      -0.1071428571428571
+    ],
+    "mean_action_accuracy": -0.025000000000000022,
+    "first_action_accuracy": 0.08571428571428574,
+    "four_action_exact_match": -0.12142857142857144
+  },
+  "by_history_bin": {
+    "short": {
+      "baseline": {
+        "samples": 140,
+        "loss": 0.7639435282775334,
+        "action_accuracy": [
+          0.6214285714285714,
+          0.7071428571428572,
+          0.6928571428571428,
+          0.6714285714285714
+        ],
+        "first_action_accuracy": 0.6214285714285714,
+        "four_action_exact_match": 0.25,
+        "mean_action_accuracy": 0.6732142857142857
+      },
+      "candidate": {
+        "samples": 140,
+        "loss": 1.3565534319196428,
+        "action_accuracy": [
+          0.7071428571428572,
+          0.6785714285714286,
+          0.6428571428571429,
+          0.5642857142857143
+        ],
+        "first_action_accuracy": 0.7071428571428572,
+        "four_action_exact_match": 0.12857142857142856,
+        "mean_action_accuracy": 0.6482142857142856
+      },
+      "candidate_minus_baseline": {
+        "loss": 0.5926099036421094,
+        "action_accuracy": [
+          0.08571428571428574,
+          -0.02857142857142858,
+          -0.04999999999999993,
+          -0.1071428571428571
+        ],
+        "mean_action_accuracy": -0.025000000000000022,
+        "first_action_accuracy": 0.08571428571428574,
+        "four_action_exact_match": -0.12142857142857144
+      }
+    }
+  }
+}

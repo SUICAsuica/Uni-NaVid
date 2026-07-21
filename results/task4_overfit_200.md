@@ -224,3 +224,11 @@ the continuation:
 
 Machine-readable metrics are in
 `results/task4_overfit_200_projector_lr1e-5_continued_comparison.json`.
+
+## Final capacity check and held-out evaluation
+
+Training was continued to 5500 continuation steps. The final model reached the
+95% four-action exact-match target on the 200 training samples. The subsequent
+episode-disjoint held-out comparison did not show an overall improvement over
+heuristic compression. Full metrics, split limitations, and reproduction
+commands are recorded in `results/task4_heldout_episode_disjoint.md`.
