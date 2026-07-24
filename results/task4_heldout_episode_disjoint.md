@@ -131,3 +131,5 @@ Final adapter SHA-256:
 Collect additional successful episodes before drawing a generalization
 conclusion. The next split must reserve entire scenes or, at minimum, enough
 complete episodes to cover all four history-length bins and multiple goals.
+The concrete collection gates, split rules, metadata requirements, and quality
+checks are specified in `docs/task4_data_requirements.md`.
