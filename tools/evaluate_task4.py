@@ -33,6 +33,19 @@ def parse_args():
     parser.add_argument("--adapter", type=Path)
     parser.add_argument("--history-num-layers", type=int, default=2)
     parser.add_argument("--history-dropout", type=float, default=0.1)
+    parser.add_argument(
+        "--history-ablation",
+        choices=(
+            "full",
+            "current_only",
+            "shuffled",
+            "wrong",
+            "recent_only",
+            "old_only",
+        ),
+        default="full",
+    )
+    parser.add_argument("--ablation-seed", type=int, default=42)
     parser.add_argument("--output", type=Path, required=True)
     parser.add_argument("--max-samples", type=int)
     return parser.parse_args()
@@ -179,6 +192,75 @@ def move_to_device(value, device):
     return value
 
 
+def apply_history_ablation(
+    images,
+    ablation,
+    *,
+    generator=None,
+    wrong_images=None,
+    recent_window=64,
+):
+    if images.ndim != 4 or images.shape[0] < 1:
+        raise ValueError("Video tensor must contain at least the current frame")
+    if recent_window < 1:
+        raise ValueError("recent_window must be positive")
+
+    history = images[:-1]
+    current = images[-1:]
+    if ablation == "full":
+        ablated_history = history
+    elif ablation == "current_only":
+        ablated_history = history[:0]
+    elif ablation == "shuffled":
+        if generator is None:
+            raise ValueError("Shuffled history requires a random generator")
+        order = torch.randperm(history.shape[0], generator=generator)
+        ablated_history = history[order]
+    elif ablation == "wrong":
+        if wrong_images is None:
+            raise ValueError("Wrong-history ablation requires source images")
+        if wrong_images.ndim != 4 or wrong_images.shape[0] < 1:
+            raise ValueError("Wrong-history source must contain a current frame")
+        ablated_history = wrong_images[:-1]
+    elif ablation == "recent_only":
+        ablated_history = history[-recent_window:]
+    elif ablation == "old_only":
+        ablated_history = history[:-recent_window]
+    else:
+        raise ValueError(f"Unsupported history ablation: {ablation}")
+
+    return torch.cat((ablated_history, current), dim=0)
+
+
+def build_wrong_history_indices(manifest):
+    indices = []
+    for target_index, target in enumerate(manifest):
+        candidates = [
+            (candidate_index, candidate)
+            for candidate_index, candidate in enumerate(manifest)
+            if candidate.get("episode") != target.get("episode")
+        ]
+        if not candidates:
+            raise ValueError(
+                "Wrong-history ablation requires at least two distinct episodes"
+            )
+
+        target_bin = history_bin(target["time_index"])
+        target_goal = target.get("goal")
+        candidate_index, _ = min(
+            candidates,
+            key=lambda item: (
+                item[1].get("goal") != target_goal,
+                history_bin(item[1]["time_index"]) != target_bin,
+                abs(item[1]["time_index"] - target["time_index"]),
+                item[1].get("id", ""),
+                item[0],
+            ),
+        )
+        indices.append(candidate_index)
+    return indices
+
+
 def main():
     args = parse_args()
     device = torch.device("cuda")
@@ -193,11 +275,27 @@ def main():
     image_processor = CLIPImageProcessor.from_pretrained(args.image_processor)
     model = build_model(args, device)
     dataset, collator = make_dataset(args, tokenizer, image_processor)
+    wrong_history_indices = (
+        build_wrong_history_indices(manifest)
+        if args.history_ablation == "wrong"
+        else None
+    )
 
     totals = new_metrics()
     by_bin = defaultdict(new_metrics)
     for index, metadata in enumerate(manifest):
-        batch = collator([dataset[index]])
+        instance = dataset[index]
+        wrong_images = None
+        if wrong_history_indices is not None:
+            wrong_images = dataset[wrong_history_indices[index]]["image"]
+        generator = torch.Generator().manual_seed(args.ablation_seed + index)
+        instance["image"] = apply_history_ablation(
+            instance["image"],
+            args.history_ablation,
+            generator=generator,
+            wrong_images=wrong_images,
+        )
+        batch = collator([instance])
         batch = {key: move_to_device(value, device) for key, value in batch.items()}
         with torch.inference_mode():
             output = model(**batch)
@@ -223,6 +321,8 @@ def main():
     result = {
         "mode": args.mode,
         "manifest": str(args.manifest),
+        "history_ablation": args.history_ablation,
+        "ablation_seed": args.ablation_seed,
         "overall": finalize_metrics(totals),
         "by_history_bin": {
             name: finalize_metrics(metrics)

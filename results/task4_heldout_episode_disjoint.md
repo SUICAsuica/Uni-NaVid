@@ -133,3 +133,8 @@ conclusion. The next split must reserve entire scenes or, at minimum, enough
 complete episodes to cover all four history-length bins and multiple goals.
 The concrete collection gates, split rules, metadata requirements, and quality
 checks are specified in `docs/task4_data_requirements.md`.
+
+The subsequent causal history interventions are recorded in
+`results/task4_history_ablation.md`. They show strong history dependence on the
+memorized 200 samples but no robust four-action benefit on the limited
+episode-disjoint held-out set.

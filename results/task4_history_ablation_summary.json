@@ -1,0 +1,756 @@
+{
+  "train": {
+    "manifest": "/home/novel/uninavid-data/task4_uninavid_full/task4_overfit_200_goal.json",
+    "mode": "goal_cross_attention",
+    "teacher_forced": true,
+    "ablation_seed": 42,
+    "conditions": {
+      "full": {
+        "overall": {
+          "samples": 200,
+          "loss": 0.04653829395771027,
+          "action_accuracy": [
+            0.99,
+            0.985,
+            0.985,
+            0.985
+          ],
+          "first_action_accuracy": 0.99,
+          "four_action_exact_match": 0.95,
+          "mean_action_accuracy": 0.98625
+        },
+        "delta_from_full": {
+          "loss": 0.0,
+          "action_accuracy": [
+            0.0,
+            0.0,
+            0.0,
+            0.0
+          ],
+          "mean_action_accuracy": 0.0,
+          "first_action_accuracy": 0.0,
+          "four_action_exact_match": 0.0
+        },
+        "by_history_bin": {
+          "extra_long": {
+            "samples": 50,
+            "loss": 0.02467080354690552,
+            "action_accuracy": [
+              1.0,
+              1.0,
+              0.98,
+              0.98
+            ],
+            "first_action_accuracy": 1.0,
+            "four_action_exact_match": 0.96,
+            "mean_action_accuracy": 0.99
+          },
+          "long": {
+            "samples": 50,
+            "loss": 0.04770584106445312,
+            "action_accuracy": [
+              1.0,
+              0.98,
+              1.0,
+              0.98
+            ],
+            "first_action_accuracy": 1.0,
+            "four_action_exact_match": 0.96,
+            "mean_action_accuracy": 0.99
+          },
+          "medium": {
+            "samples": 50,
+            "loss": 0.07570302963256836,
+            "action_accuracy": [
+              0.98,
+              0.96,
+              0.96,
+              1.0
+            ],
+            "first_action_accuracy": 0.98,
+            "four_action_exact_match": 0.92,
+            "mean_action_accuracy": 0.975
+          },
+          "short": {
+            "samples": 50,
+            "loss": 0.03807350158691406,
+            "action_accuracy": [
+              0.98,
+              1.0,
+              1.0,
+              0.98
+            ],
+            "first_action_accuracy": 0.98,
+            "four_action_exact_match": 0.96,
+            "mean_action_accuracy": 0.99
+          }
+        }
+      },
+      "current_only": {
+        "overall": {
+          "samples": 200,
+          "loss": 0.3282670164108276,
+          "action_accuracy": [
+            0.85,
+            0.885,
+            0.9,
+            0.885
+          ],
+          "first_action_accuracy": 0.85,
+          "four_action_exact_match": 0.685,
+          "mean_action_accuracy": 0.8799999999999999
+        },
+        "delta_from_full": {
+          "loss": 0.28172872245311736,
+          "action_accuracy": [
+            -0.14,
+            -0.09999999999999998,
+            -0.08499999999999996,
+            -0.09999999999999998
+          ],
+          "mean_action_accuracy": -0.10625000000000007,
+          "first_action_accuracy": -0.14,
+          "four_action_exact_match": -0.2649999999999999
+        },
+        "by_history_bin": {
+          "extra_long": {
+            "samples": 50,
+            "loss": 0.2527325439453125,
+            "action_accuracy": [
+              0.92,
+              0.94,
+              0.88,
+              0.9
+            ],
+            "first_action_accuracy": 0.92,
+            "four_action_exact_match": 0.7,
+            "mean_action_accuracy": 0.9099999999999999
+          },
+          "long": {
+            "samples": 50,
+            "loss": 0.41134254455566405,
+            "action_accuracy": [
+              0.74,
+              0.82,
+              0.94,
+              0.84
+            ],
+            "first_action_accuracy": 0.74,
+            "four_action_exact_match": 0.6,
+            "mean_action_accuracy": 0.835
+          },
+          "medium": {
+            "samples": 50,
+            "loss": 0.4365065574645996,
+            "action_accuracy": [
+              0.84,
+              0.88,
+              0.88,
+              0.88
+            ],
+            "first_action_accuracy": 0.84,
+            "four_action_exact_match": 0.7,
+            "mean_action_accuracy": 0.87
+          },
+          "short": {
+            "samples": 50,
+            "loss": 0.21248641967773438,
+            "action_accuracy": [
+              0.9,
+              0.9,
+              0.9,
+              0.92
+            ],
+            "first_action_accuracy": 0.9,
+            "four_action_exact_match": 0.74,
+            "mean_action_accuracy": 0.905
+          }
+        }
+      },
+      "shuffled": {
+        "overall": {
+          "samples": 200,
+          "loss": 0.047072384357452396,
+          "action_accuracy": [
+            0.98,
+            0.985,
+            0.985,
+            0.985
+          ],
+          "first_action_accuracy": 0.98,
+          "four_action_exact_match": 0.94,
+          "mean_action_accuracy": 0.9837499999999999
+        },
+        "delta_from_full": {
+          "loss": 0.0005340903997421292,
+          "action_accuracy": [
+            -0.010000000000000009,
+            0.0,
+            0.0,
+            0.0
+          ],
+          "mean_action_accuracy": -0.0025000000000000577,
+          "first_action_accuracy": -0.010000000000000009,
+          "four_action_exact_match": -0.010000000000000009
+        },
+        "by_history_bin": {
+          "extra_long": {
+            "samples": 50,
+            "loss": 0.026002244949340822,
+            "action_accuracy": [
+              0.98,
+              1.0,
+              0.98,
+              0.98
+            ],
+            "first_action_accuracy": 0.98,
+            "four_action_exact_match": 0.94,
+            "mean_action_accuracy": 0.985
+          },
+          "long": {
+            "samples": 50,
+            "loss": 0.04793128967285156,
+            "action_accuracy": [
+              0.98,
+              0.98,
+              1.0,
+              0.98
+            ],
+            "first_action_accuracy": 0.98,
+            "four_action_exact_match": 0.94,
+            "mean_action_accuracy": 0.985
+          },
+          "medium": {
+            "samples": 50,
+            "loss": 0.07669288635253907,
+            "action_accuracy": [
+              0.98,
+              0.96,
+              0.96,
+              1.0
+            ],
+            "first_action_accuracy": 0.98,
+            "four_action_exact_match": 0.92,
+            "mean_action_accuracy": 0.975
+          },
+          "short": {
+            "samples": 50,
+            "loss": 0.037663116455078124,
+            "action_accuracy": [
+              0.98,
+              1.0,
+              1.0,
+              0.98
+            ],
+            "first_action_accuracy": 0.98,
+            "four_action_exact_match": 0.96,
+            "mean_action_accuracy": 0.99
+          }
+        }
+      },
+      "wrong": {
+        "overall": {
+          "samples": 200,
+          "loss": 0.4186718559265137,
+          "action_accuracy": [
+            0.825,
+            0.815,
+            0.82,
+            0.87
+          ],
+          "first_action_accuracy": 0.825,
+          "four_action_exact_match": 0.52,
+          "mean_action_accuracy": 0.8325
+        },
+        "delta_from_full": {
+          "loss": 0.37213356196880343,
+          "action_accuracy": [
+            -0.16500000000000004,
+            -0.17000000000000004,
+            -0.16500000000000004,
+            -0.11499999999999999
+          ],
+          "mean_action_accuracy": -0.15374999999999994,
+          "first_action_accuracy": -0.16500000000000004,
+          "four_action_exact_match": -0.42999999999999994
+        },
+        "by_history_bin": {
+          "extra_long": {
+            "samples": 50,
+            "loss": 0.45790321350097657,
+            "action_accuracy": [
+              0.84,
+              0.8,
+              0.78,
+              0.86
+            ],
+            "first_action_accuracy": 0.84,
+            "four_action_exact_match": 0.4,
+            "mean_action_accuracy": 0.82
+          },
+          "long": {
+            "samples": 50,
+            "loss": 0.43269943237304687,
+            "action_accuracy": [
+              0.8,
+              0.8,
+              0.84,
+              0.84
+            ],
+            "first_action_accuracy": 0.8,
+            "four_action_exact_match": 0.54,
+            "mean_action_accuracy": 0.82
+          },
+          "medium": {
+            "samples": 50,
+            "loss": 0.373441162109375,
+            "action_accuracy": [
+              0.84,
+              0.88,
+              0.8,
+              0.88
+            ],
+            "first_action_accuracy": 0.84,
+            "four_action_exact_match": 0.58,
+            "mean_action_accuracy": 0.85
+          },
+          "short": {
+            "samples": 50,
+            "loss": 0.41064361572265623,
+            "action_accuracy": [
+              0.82,
+              0.78,
+              0.86,
+              0.9
+            ],
+            "first_action_accuracy": 0.82,
+            "four_action_exact_match": 0.56,
+            "mean_action_accuracy": 0.84
+          }
+        }
+      },
+      "recent_only": {
+        "overall": {
+          "samples": 200,
+          "loss": 0.26932785034179685,
+          "action_accuracy": [
+            0.89,
+            0.89,
+            0.93,
+            0.925
+          ],
+          "first_action_accuracy": 0.89,
+          "four_action_exact_match": 0.775,
+          "mean_action_accuracy": 0.90875
+        },
+        "delta_from_full": {
+          "loss": 0.2227895563840866,
+          "action_accuracy": [
+            -0.09999999999999998,
+            -0.09499999999999997,
+            -0.05499999999999994,
+            -0.05999999999999994
+          ],
+          "mean_action_accuracy": -0.07750000000000001,
+          "first_action_accuracy": -0.09999999999999998,
+          "four_action_exact_match": -0.17499999999999993
+        },
+        "by_history_bin": {
+          "extra_long": {
+            "samples": 50,
+            "loss": 0.28737173080444334,
+            "action_accuracy": [
+              0.9,
+              0.86,
+              0.88,
+              0.9
+            ],
+            "first_action_accuracy": 0.9,
+            "four_action_exact_match": 0.68,
+            "mean_action_accuracy": 0.885
+          },
+          "long": {
+            "samples": 50,
+            "loss": 0.5030161285400391,
+            "action_accuracy": [
+              0.78,
+              0.78,
+              0.9,
+              0.86
+            ],
+            "first_action_accuracy": 0.78,
+            "four_action_exact_match": 0.6,
+            "mean_action_accuracy": 0.83
+          },
+          "medium": {
+            "samples": 50,
+            "loss": 0.248850040435791,
+            "action_accuracy": [
+              0.9,
+              0.92,
+              0.94,
+              0.96
+            ],
+            "first_action_accuracy": 0.9,
+            "four_action_exact_match": 0.86,
+            "mean_action_accuracy": 0.9299999999999999
+          },
+          "short": {
+            "samples": 50,
+            "loss": 0.03807350158691406,
+            "action_accuracy": [
+              0.98,
+              1.0,
+              1.0,
+              0.98
+            ],
+            "first_action_accuracy": 0.98,
+            "four_action_exact_match": 0.96,
+            "mean_action_accuracy": 0.99
+          }
+        }
+      },
+      "old_only": {
+        "overall": {
+          "samples": 200,
+          "loss": 0.15290150105953215,
+          "action_accuracy": [
+            0.93,
+            0.925,
+            0.945,
+            0.94
+          ],
+          "first_action_accuracy": 0.93,
+          "four_action_exact_match": 0.82,
+          "mean_action_accuracy": 0.9349999999999999
+        },
+        "delta_from_full": {
+          "loss": 0.10636320710182189,
+          "action_accuracy": [
+            -0.05999999999999994,
+            -0.05999999999999994,
+            -0.040000000000000036,
+            -0.04500000000000004
+          ],
+          "mean_action_accuracy": -0.05125000000000002,
+          "first_action_accuracy": -0.05999999999999994,
+          "four_action_exact_match": -0.13
+        },
+        "by_history_bin": {
+          "extra_long": {
+            "samples": 50,
+            "loss": 0.04420955419540405,
+            "action_accuracy": [
+              0.96,
+              0.98,
+              0.98,
+              0.98
+            ],
+            "first_action_accuracy": 0.96,
+            "four_action_exact_match": 0.92,
+            "mean_action_accuracy": 0.975
+          },
+          "long": {
+            "samples": 50,
+            "loss": 0.05313907623291016,
+            "action_accuracy": [
+              1.0,
+              0.98,
+              1.0,
+              0.98
+            ],
+            "first_action_accuracy": 1.0,
+            "four_action_exact_match": 0.96,
+            "mean_action_accuracy": 0.99
+          },
+          "medium": {
+            "samples": 50,
+            "loss": 0.3017709541320801,
+            "action_accuracy": [
+              0.86,
+              0.84,
+              0.9,
+              0.88
+            ],
+            "first_action_accuracy": 0.86,
+            "four_action_exact_match": 0.66,
+            "mean_action_accuracy": 0.87
+          },
+          "short": {
+            "samples": 50,
+            "loss": 0.21248641967773438,
+            "action_accuracy": [
+              0.9,
+              0.9,
+              0.9,
+              0.92
+            ],
+            "first_action_accuracy": 0.9,
+            "four_action_exact_match": 0.74,
+            "mean_action_accuracy": 0.905
+          }
+        }
+      }
+    }
+  },
+  "heldout": {
+    "manifest": "/home/novel/uninavid-data/task4_uninavid_full/task4_heldout_episode_disjoint_goal.json",
+    "mode": "goal_cross_attention",
+    "teacher_forced": true,
+    "ablation_seed": 42,
+    "conditions": {
+      "full": {
+        "overall": {
+          "samples": 140,
+          "loss": 1.3565534319196428,
+          "action_accuracy": [
+            0.7071428571428572,
+            0.6785714285714286,
+            0.6428571428571429,
+            0.5642857142857143
+          ],
+          "first_action_accuracy": 0.7071428571428572,
+          "four_action_exact_match": 0.12857142857142856,
+          "mean_action_accuracy": 0.6482142857142856
+        },
+        "delta_from_full": {
+          "loss": 0.0,
+          "action_accuracy": [
+            0.0,
+            0.0,
+            0.0,
+            0.0
+          ],
+          "mean_action_accuracy": 0.0,
+          "first_action_accuracy": 0.0,
+          "four_action_exact_match": 0.0
+        },
+        "by_history_bin": {
+          "short": {
+            "samples": 140,
+            "loss": 1.3565534319196428,
+            "action_accuracy": [
+              0.7071428571428572,
+              0.6785714285714286,
+              0.6428571428571429,
+              0.5642857142857143
+            ],
+            "first_action_accuracy": 0.7071428571428572,
+            "four_action_exact_match": 0.12857142857142856,
+            "mean_action_accuracy": 0.6482142857142856
+          }
+        }
+      },
+      "current_only": {
+        "overall": {
+          "samples": 140,
+          "loss": 1.2716439383370535,
+          "action_accuracy": [
+            0.6142857142857143,
+            0.6428571428571429,
+            0.6571428571428571,
+            0.5571428571428572
+          ],
+          "first_action_accuracy": 0.6142857142857143,
+          "four_action_exact_match": 0.12142857142857143,
+          "mean_action_accuracy": 0.6178571428571429
+        },
+        "delta_from_full": {
+          "loss": -0.08490949358258937,
+          "action_accuracy": [
+            -0.09285714285714286,
+            -0.0357142857142857,
+            0.014285714285714235,
+            -0.0071428571428571175
+          ],
+          "mean_action_accuracy": -0.03035714285714275,
+          "first_action_accuracy": -0.09285714285714286,
+          "four_action_exact_match": -0.007142857142857131
+        },
+        "by_history_bin": {
+          "short": {
+            "samples": 140,
+            "loss": 1.2716439383370535,
+            "action_accuracy": [
+              0.6142857142857143,
+              0.6428571428571429,
+              0.6571428571428571,
+              0.5571428571428572
+            ],
+            "first_action_accuracy": 0.6142857142857143,
+            "four_action_exact_match": 0.12142857142857143,
+            "mean_action_accuracy": 0.6178571428571429
+          }
+        }
+      },
+      "shuffled": {
+        "overall": {
+          "samples": 140,
+          "loss": 1.353806413922991,
+          "action_accuracy": [
+            0.6928571428571428,
+            0.6785714285714286,
+            0.6357142857142857,
+            0.5571428571428572
+          ],
+          "first_action_accuracy": 0.6928571428571428,
+          "four_action_exact_match": 0.11428571428571428,
+          "mean_action_accuracy": 0.6410714285714285
+        },
+        "delta_from_full": {
+          "loss": -0.0027470179966517794,
+          "action_accuracy": [
+            -0.014285714285714346,
+            0.0,
+            -0.0071428571428572285,
+            -0.0071428571428571175
+          ],
+          "mean_action_accuracy": -0.0071428571428571175,
+          "first_action_accuracy": -0.014285714285714346,
+          "four_action_exact_match": -0.014285714285714277
+        },
+        "by_history_bin": {
+          "short": {
+            "samples": 140,
+            "loss": 1.353806413922991,
+            "action_accuracy": [
+              0.6928571428571428,
+              0.6785714285714286,
+              0.6357142857142857,
+              0.5571428571428572
+            ],
+            "first_action_accuracy": 0.6928571428571428,
+            "four_action_exact_match": 0.11428571428571428,
+            "mean_action_accuracy": 0.6410714285714285
+          }
+        }
+      },
+      "wrong": {
+        "overall": {
+          "samples": 140,
+          "loss": 1.3716421944754464,
+          "action_accuracy": [
+            0.6785714285714286,
+            0.6857142857142857,
+            0.6428571428571429,
+            0.5857142857142857
+          ],
+          "first_action_accuracy": 0.6785714285714286,
+          "four_action_exact_match": 0.12142857142857143,
+          "mean_action_accuracy": 0.6482142857142857
+        },
+        "delta_from_full": {
+          "loss": 0.015088762555803603,
+          "action_accuracy": [
+            -0.02857142857142858,
+            0.0071428571428571175,
+            0.0,
+            0.021428571428571463
+          ],
+          "mean_action_accuracy": 1.1102230246251565e-16,
+          "first_action_accuracy": -0.02857142857142858,
+          "four_action_exact_match": -0.007142857142857131
+        },
+        "by_history_bin": {
+          "short": {
+            "samples": 140,
+            "loss": 1.3716421944754464,
+            "action_accuracy": [
+              0.6785714285714286,
+              0.6857142857142857,
+              0.6428571428571429,
+              0.5857142857142857
+            ],
+            "first_action_accuracy": 0.6785714285714286,
+            "four_action_exact_match": 0.12142857142857143,
+            "mean_action_accuracy": 0.6482142857142857
+          }
+        }
+      },
+      "recent_only": {
+        "overall": {
+          "samples": 140,
+          "loss": 1.3565534319196428,
+          "action_accuracy": [
+            0.7071428571428572,
+            0.6785714285714286,
+            0.6428571428571429,
+            0.5642857142857143
+          ],
+          "first_action_accuracy": 0.7071428571428572,
+          "four_action_exact_match": 0.12857142857142856,
+          "mean_action_accuracy": 0.6482142857142856
+        },
+        "delta_from_full": {
+          "loss": 0.0,
+          "action_accuracy": [
+            0.0,
+            0.0,
+            0.0,
+            0.0
+          ],
+          "mean_action_accuracy": 0.0,
+          "first_action_accuracy": 0.0,
+          "four_action_exact_match": 0.0
+        },
+        "by_history_bin": {
+          "short": {
+            "samples": 140,
+            "loss": 1.3565534319196428,
+            "action_accuracy": [
+              0.7071428571428572,
+              0.6785714285714286,
+              0.6428571428571429,
+              0.5642857142857143
+            ],
+            "first_action_accuracy": 0.7071428571428572,
+            "four_action_exact_match": 0.12857142857142856,
+            "mean_action_accuracy": 0.6482142857142856
+          }
+        }
+      },
+      "old_only": {
+        "overall": {
+          "samples": 140,
+          "loss": 1.2716439383370535,
+          "action_accuracy": [
+            0.6142857142857143,
+            0.6428571428571429,
+            0.6571428571428571,
+            0.5571428571428572
+          ],
+          "first_action_accuracy": 0.6142857142857143,
+          "four_action_exact_match": 0.12142857142857143,
+          "mean_action_accuracy": 0.6178571428571429
+        },
+        "delta_from_full": {
+          "loss": -0.08490949358258937,
+          "action_accuracy": [
+            -0.09285714285714286,
+            -0.0357142857142857,
+            0.014285714285714235,
+            -0.0071428571428571175
+          ],
+          "mean_action_accuracy": -0.03035714285714275,
+          "first_action_accuracy": -0.09285714285714286,
+          "four_action_exact_match": -0.007142857142857131
+        },
+        "by_history_bin": {
+          "short": {
+            "samples": 140,
+            "loss": 1.2716439383370535,
+            "action_accuracy": [
+              0.6142857142857143,
+              0.6428571428571429,
+              0.6571428571428571,
+              0.5571428571428572
+            ],
+            "first_action_accuracy": 0.6142857142857143,
+            "four_action_exact_match": 0.12142857142857143,
+            "mean_action_accuracy": 0.6178571428571429
+          }
+        }
+      }
+    }
+  }
+}
